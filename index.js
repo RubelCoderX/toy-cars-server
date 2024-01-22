@@ -25,6 +25,29 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+    const remoteCollection = client.db("toyCars").collection("remotes");
+    const educationalCollection = client
+      .db("toyCars")
+      .collection("educationals");
+    const modelCollection = client.db("toyCars").collection("models");
+    // data load for remote-car
+    app.get("/remotes", async (req, res) => {
+      const cursor = remoteCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    // data load for educational-car
+    app.get("/educationals", async (req, res) => {
+      const cursor = educationalCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    // data load for model-car
+    app.get("/models", async (req, res) => {
+      const cursor = modelCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
