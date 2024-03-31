@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 4000;
 
@@ -19,35 +19,40 @@ const client = new MongoClient(uri, {
     strict: true,
     deprecationErrors: true,
   },
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  maxPoolSize: 10,
 });
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    const remoteCollection = client.db("toyCars").collection("remotes");
-    const educationalCollection = client
-      .db("toyCars")
-      .collection("educationals");
-    const modelCollection = client.db("toyCars").collection("models");
+    // await client.connect();
+    const allToysCollection = client.db("toyCars").collection("allToys");
+
     // data load for remote-car
-    app.get("/remotes", async (req, res) => {
-      const cursor = remoteCollection.find();
+    app.get("/allToys", async (req, res) => {
+      const cursor = allToysCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
-    // data load for educational-car
-    app.get("/educationals", async (req, res) => {
-      const cursor = educationalCollection.find();
-      const result = await cursor.toArray();
+    // fetch sigle data load for details page
+    app.get("/allToys/:id", async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const query = { _id: new ObjectId(id) };
+
+      const result = await allToysCollection.findOne(query);
+      // console.log("result", result);
       res.send(result);
     });
-    // data load for model-car
-    app.get("/models", async (req, res) => {
-      const cursor = modelCollection.find();
-      const result = await cursor.toArray();
+    // insert toy to the database
+    app.post("/allToys", async (req, res) => {
+      const newToy = req.body;
+      const result = await allToysCollection.insertOne(newToy);
       res.send(result);
     });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
